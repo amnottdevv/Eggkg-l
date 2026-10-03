@@ -1,0 +1,7 @@
+# build.ruf - paket "eqfetch" (eggkg / Equinox OS)
+# Kontrak sama dengan paket bash: eggkg mengunduh eqfetch.c ke
+# /equinox/.local/eqfetch/src/, lalu menjalankan
+#   mtcc -make /equinox/.local/eqfetch/build.ruf
+echo "eggkg: membangun paket eqfetch (neofetch mini)"
+src /equinox/.local/eqfetch/src
+out /equinox/.local/eqfetch
