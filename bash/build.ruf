@@ -1,4 +1,4 @@
 # build.ruf for "bash" (eggkg / Equinox OS)
-echo "eggkg: membangun paket bash (19 coreutils)"
+echo "eggkg: Build Bash"
 src /equinox/.local/bash/src
 out /equinox/.local/bash
