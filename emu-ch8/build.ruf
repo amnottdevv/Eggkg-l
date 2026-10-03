@@ -1,0 +1,18 @@
+# build.ruf - paket "emu-ch8" (eggkg / Equinox OS)
+# Emulator CHIP-8: RAM 4 KiB, layar 64x32 mono, seluruh himpunan
+# instruksi COSMAC VIP (00FD = exit), render incremental ke konsol VESA.
+# Kontrak sama dengan paket bash/eqfetch: eggkg mengunduh emu-ch8.c ke
+# /equinox/.local/emu-ch8/src/, lalu menjalankan
+#   mtcc -make /equinox/.local/emu-ch8/build.ruf
+# hasilnya (emu-ch8.mrp) dipindah eggkg ke /bin.
+#
+# ROM contoh bounce.c8 ikut terunduh ke src/ — bukan .c, jadi diabaikan
+# walker mtcc, dipakai sebagai data:
+#   emu-ch8 /equinox/.local/emu-ch8/src/bounce.c8
+# tanpa argumen: demo bawaan (keluar sendiri via 00FD).
+#
+# Catatan: butuh builtin mtcc key_event() (syscall 32 — tekan + lepas,
+# untuk state tombol EX9E/EXA1/FX0A); ada di mtcc.mrp rilis v0.9.x.
+echo "eggkg: membangun paket emu-ch8 (CHIP-8 emulator)"
+src /equinox/.local/emu-ch8/src
+out /equinox/.local/emu-ch8
