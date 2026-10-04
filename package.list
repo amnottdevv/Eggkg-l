@@ -6,3 +6,4 @@ space = ["https://github.com/amnottdevv/Eggkg-l/blob/main/space/build.ruf", "htt
 tetris = ["https://github.com/amnottdevv/Eggkg-l/blob/main/tetris/build.ruf", "https://github.com/amnottdevv/Eggkg-l/blob/main/tetris/tetris.c"]
 flappy = ["https://github.com/amnottdevv/Eggkg-l/blob/main/flappy/build.ruf", "https://github.com/amnottdevv/Eggkg-l/blob/main/flappy/flappy.c"]
 ppmview = ["https://github.com/amnottdevv/Eggkg-l/blob/main/ppmview/build.ruf", "https://github.com/amnottdevv/Eggkg-l/blob/main/ppmview/ppmview.c", "https://github.com/amnottdevv/Eggkg-l/blob/main/ppmview/demo.ppm"]
+bfi = ["https://github.com/amnottdevv/Eggkg-l/blob/main/bfi/build.ruf", "https://github.com/amnottdevv/Eggkg-l/blob/main/bfi/bfi.c", "https://github.com/amnottdevv/Eggkg-l/blob/main/bfi/hello.bf"]
