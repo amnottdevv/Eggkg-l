@@ -1,4 +1,21 @@
-# build.ruf for "wolf" (eggkg / Equinox OS)
-echo "eggkg: Build Wolf"
-src /equinox/.local/wolf/src
-out /equinox/.local/wolf
+# build.ruf — package "wolf" (eggkg / Equinox OS) — .ruf format v3
+#
+# v3 (v0.9.3): Makefile-style variables — `name := "value"` plus
+# `$name` expansion (case-insensitive). A variable name must DIFFER
+# from a directive name (echo/src/exclude/out/lib/copy/move):
+# directives are matched first, so `src := ...` would be read as the
+# src directive, not as an assignment.
+# The eggkg contract is unchanged — the .c files are downloaded into
+# $source, eggkg runs `mtcc -make /equinox/.local/wolf/build.ruf`,
+# then moves the .mrp from $Target into /bin (that is why the `copy`
+# directive is not used here: that move already belongs to eggkg).
+# wolf reads held keys through the key_event() builtin (syscall 32),
+# which the v0.9.3 mtcc ships (restored in this tree).
+# Libc needs no entry: #include <...> splices morph.h automatically.
+
+pkg    := "wolf"
+source := "/equinox/.local/$pkg/src"
+Target := "/equinox/.local/$pkg"
+echo   "eggkg: Build $pkg (ray-cast maze shooter)"
+src    $source
+out    $Target
