@@ -1,39 +1,40 @@
 /* ============================================================
- *  Equinox OS — colored "neofetch"-style screen
- *  ANSI escape sequences for VT100/ANSI terminals
- *  compile: cc -std=c99 -o neofetch neofetch.c
+ *  Equinox OS — eqfetchw.c (colored neofetch mini)
+ *  FIXED: Menghindari function-like macros untuk ntcc
  * ============================================================ */
 
-/* ---------- ANSI color helpers ---------- */
-#define ESC          "\033["
-#define RESET        ESC "0m"
-#define BOLD         ESC "1m"
-#define DIM          ESC "2m"
+/* ---------- ANSI color helpers (Object-like macros only) ---------- */
+#define RESET     "\033[0m"
+#define BOLD      "\033[1m"
 
-/* Foreground 30-37, Bright 90-97 */
-#define F_BLACK      ESC "30m"
-#define F_RED        ESC "31m"
-#define F_GREEN      ESC "32m"
-#define F_YELLOW     ESC "33m"
-#define F_BLUE       ESC "34m"
-#define F_MAGENTA    ESC "35m"
-#define F_CYAN       ESC "36m"
-#define F_WHITE      ESC "37m"
-#define F_GRAY       ESC "90m"
-#define F_BRED       ESC "91m"
-#define F_BGREEN     ESC "92m"
-#define F_BYELLOW    ESC "93m"
-#define F_BBLUE      ESC "94m"
-#define F_BMAGENTA   ESC "95m"
-#define F_BCYAN      ESC "96m"
-#define F_BWHITE     ESC "97m"
+/* Warna dasar 30-37 */
+#define F_BLACK   "\033[30m"
+#define F_RED     "\033[31m"
+#define F_GREEN   "\033[32m"
+#define F_YELLOW  "\033[33m"
+#define F_BLUE    "\033[34m"
+#define F_MAGENTA "\033[35m"
+#define F_CYAN    "\033[36m"
+#define F_WHITE   "\033[37m"
+#define F_GRAY    "\033[90m"
 
-/* Background (optional) */
-#define B_BLUE       ESC "44m"
-#define B_BBLUE      ESC "104m"
+/* Warna terang 90-97 */
+#define F_BRED    "\033[91m"
+#define F_BGREEN  "\033[92m"
+#define F_BYELLOW "\033[93m"
+#define F_BBLUE   "\033[94m"
+#define F_BMAGENTA "\033[95m"
+#define F_BCYAN   "\033[96m"
+#define F_BWHITE  "\033[97m"
 
-/* 256-color gradient (kalau terminal support) */
-#define C256(n)      ESC "38;5;" #n "m"
+/* Warna 256 (langsung string, bukan macro fungsi) */
+#define C202      "\033[38;5;202m"
+#define C220      "\033[38;5;220m"
+#define C46       "\033[38;5;46m"
+#define C51       "\033[38;5;51m"
+#define C45       "\033[38;5;45m"
+#define C33       "\033[38;5;33m"
+#define C201      "\033[38;5;201m"
 
 /* ------------------------------------------------------------
  * prhex — 1 byte -> "xx"
@@ -62,7 +63,7 @@ void pr_ip(int w) {
 }
 
 /* ------------------------------------------------------------
- * pa — print dengan translasi '#' -> '"' (biar tidak bentrok)
+ * pa — print dengan translasi '#' -> '"'
  * ------------------------------------------------------------ */
 void pa(char* s) {
     char b[80];
@@ -79,10 +80,6 @@ void pa(char* s) {
 
 /* ------------------------------------------------------------
  * art — ASCII art dengan warna gradasi
- *   baris 0-4   : merah -> kuning   (atas)
- *   baris 5-10  : kuning -> hijau   (tengah atas)
- *   baris 11-16 : hijau -> cyan     (tengah bawah)
- *   baris 17-20 : cyan -> biru      (bawah)
  * ------------------------------------------------------------ */
 void art(int i) {
     char* line;
@@ -90,23 +87,23 @@ void art(int i) {
 
     if      (i == 0)  { color = F_BRED;     line = "               ,,ggddY888Ybbgg,,                "; }
     else if (i == 1)  { color = F_BRED;     line = "          ,agd8##'   .d8888888888bga,           "; }
-    else if (i == 2)  { color = ESC "38;5;202m"; line = "       ,gdP##'     .d88888888888888888g,        "; }
+    else if (i == 2)  { color = C202;       line = "       ,gdP##'     .d88888888888888888g,        "; }
     else if (i == 3)  { color = F_BYELLOW;  line = "     ,dP#        ,d888888888888888888888b,      "; }
     else if (i == 4)  { color = F_BYELLOW;  line = "   ,dP#         ,8888888888888888888888888b,    "; }
-    else if (i == 5)  { color = ESC "38;5;220m"; line = "  ,8#          ,8888888P###88888888888888888,   "; }
+    else if (i == 5)  { color = C220;       line = "  ,8#          ,8888888P###88888888888888888,   "; }
     else if (i == 6)  { color = F_BGREEN;   line = " ,8'           I888888I    )88888888888888888,  "; }
     else if (i == 7)  { color = F_BGREEN;   line = ",8'            `8888888booo8888888888888888888, "; }
-    else if (i == 8)  { color = ESC "38;5;46m";  line = "d'              `88888888888888888888888888888b "; }
+    else if (i == 8)  { color = C46;        line = "d'              `88888888888888888888888888888b "; }
     else if (i == 9)  { color = F_BCYAN;    line = "8                `#8888888888888888888888888888 "; }
     else if (i == 10) { color = F_BCYAN;    line = "8                  `#88888888888888888888888888 "; }
-    else if (i == 11) { color = ESC "38;5;51m";  line = "8                      `#8888888888888888888888 "; }
-    else if (i == 12) { color = ESC "38;5;45m";  line = "Y,                        `8888888888888888888P "; }
+    else if (i == 11) { color = C51;        line = "8                      `#8888888888888888888888 "; }
+    else if (i == 12) { color = C45;        line = "Y,                        `8888888888888888888P "; }
     else if (i == 13) { color = F_BBLUE;    line = "`8,                         `88888888888888888' "; }
     else if (i == 14) { color = F_BBLUE;    line = " `8,              .oo.       `888888888888888'  "; }
-    else if (i == 15) { color = ESC "38;5;33m";  line = "  `8a             8888        88888888888888'   "; }
+    else if (i == 15) { color = C33;        line = "  `8a             8888        88888888888888'   "; }
     else if (i == 16) { color = F_BMAGENTA; line = "   `Yba           `##'       ,888888888888P'    "; }
     else if (i == 17) { color = F_BMAGENTA; line = "     #Yba                   ,88888888888'       "; }
-    else if (i == 18) { color = ESC "38;5;201m"; line = "       `#Yba,             ,8888888888P#'        "; }
+    else if (i == 18) { color = C201;       line = "       `#Yba,             ,8888888888P#'        "; }
     else if (i == 19) { color = F_BMAGENTA; line = "          `#Y8baa,      ,d88888888P#'           "; }
     else if (i == 20) { color = F_BMAGENTA; line = "               ``##YYba8888P888#'               "; }
     else              { color = RESET;      line = "                                                "; }
@@ -212,7 +209,7 @@ int main() {
 
     /* header kecil di atas */
     print("\n");
-    print(BOLD F_BCYAN "  ╭─ " F_BGREEN "Equinox OS" F_BCYAN " ─ " F_GRAY "neofetch" F_BCYAN " ─╮" RESET "\n\n");
+    print(BOLD F_BCYAN "  +-- " F_BGREEN "Equinox OS" F_BCYAN " -- " F_GRAY "neofetch" F_BCYAN " --+" RESET "\n\n");
 
     for (i = 0; i < 21; i++) {
         print("  ");
@@ -224,17 +221,16 @@ int main() {
 
     /* color palette bar (opsional, ala neofetch) */
     print("\n  ");
-    print(F_BLACK  "███");
-    print(F_RED    "███");
-    print(F_GREEN  "███");
-    print(F_YELLOW "███");
-    print(F_BLUE   "███");
-    print(F_MAGENTA"███");
-    print(F_CYAN   "███");
-    print(F_WHITE  "███");
+    print(F_BLACK  "###");
+    print(F_RED    "###");
+    print(F_GREEN  "###");
+    print(F_YELLOW "###");
+    print(F_BLUE   "###");
+    print(F_MAGENTA"###");
+    print(F_CYAN   "###");
+    print(F_WHITE  "###");
     print(RESET  "  ");
-    print(F_BBLACK ? "" : "");
-    print(F_GRAY   "██████");
+    print(F_GRAY   "######");
     print(RESET "\n\n");
 
     return 0;
