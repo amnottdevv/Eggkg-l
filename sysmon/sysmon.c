@@ -124,7 +124,7 @@ void print_table(int n, int sel_row) {
     }
 }
 
-/* tiny atoi for -kill */
+/* tiny atoi for -kill; returns 0 if the string is not a positive integer */
 int to_int(char* s) {
     int v;
     int i;
@@ -174,91 +174,87 @@ int str_eq(char* a, char* b) {
     return a[i] == b[i];
 }
 
-int main() {
-    char args[160];
-    char tokbuf[512];
-    int n_tok;
-    int i;
+/* ---------------- subcommand handlers ---------------- */
+
+void do_help(void) {
+    print("sysmon - Equinox OS system monitor\n");
+    print("  sysmon                 live TUI (arrows+k+q)\n");
+    print("  sysmon -list-task      one-shot task table\n");
+    print("  sysmon -kill PID       kill task\n");
+    print("  sysmon -spawn P -args \"A\"  spawn task\n");
+}
+
+int do_list_task(void) {
+    int n;
+    n = task_list(info);
+    if (n < 0) n = 0;
+    if (n > MAX_TASKS) n = MAX_TASKS;
+    print_table(n, -1);
+    return 0;
+}
+
+int do_kill(int pid) {
+    int r;
+    r = task_kill(pid);
+    if (r == 0) {
+        print("sysmon: killed pid ");
+        printint(pid);
+        print("\n");
+        return 0;
+    }
+    print("sysmon: kill failed for pid ");
+    printint(pid);
+    print("\n");
+    return 1;
+}
+
+/* search tokens i+1 .. n_tok-1 for "-args VALUE"; returns VALUE or "" */
+char* find_args(char* tokbuf, int n_tok, int start) {
+    int j;
+    for (j = start; j + 1 < n_tok; j++) {
+        if (str_eq(tok(tokbuf, j), "-args")) {
+            return tok(tokbuf, j + 1);
+        }
+    }
+    return "";
+}
+
+int do_spawn(char* tokbuf, int n_tok, int i) {
+    char* path;
+    char* a;
+    int pid;
+
+    if (i + 1 >= n_tok || tok(tokbuf, i + 1)[0] == '-') {
+        print("sysmon: -spawn needs a path\n");
+        return 2;
+    }
+    path = tok(tokbuf, i + 1);
+    a = find_args(tokbuf, n_tok, i + 2);
+
+    pid = task_spawn_args(path, 0, a);
+    if (pid > 0) {
+        print("sysmon: spawned pid ");
+        printint(pid);
+        print("\n");
+        return 0;
+    }
+    print("sysmon: spawn failed\n");
+    return 1;
+}
+
+/* ---------------- TUI ---------------- */
+
+void tui_loop(void) {
     int k;
     int up;
     int n;
     int used_kb;
+    int first_frame;
 
-    args[0] = 0;
-    i = getargs(args, 160);
-    n_tok = split(args, tokbuf);
-
-    /* first token is the program name; skip it */
-    i = 0;
-    while (i < n_tok) {
-        if (str_eq(tok(tokbuf, i), "sysmon")) { i++; break; }
-        i++;
-        break;
-    }
-
-    /* ---- non-TUI modes ---- */
-    if (i < n_tok) {
-        if (str_eq(tok(tokbuf, i), "-h")) {
-            print("sysmon - Equinox OS system monitor\n");
-            print("  sysmon                 live TUI (arrows+k+q)\n");
-            print("  sysmon -list-task      one-shot task table\n");
-            print("  sysmon -kill PID       kill task\n");
-            print("  sysmon -spawn P -args \"A\"  spawn task\n");
-            return 0;
-        }
-        if (str_eq(tok(tokbuf, i), "-list-task")) {
-            int n2;
-            n2 = task_list(info);
-            if (n2 < 0) n2 = 0;
-            if (n2 > MAX_TASKS) n2 = MAX_TASKS;
-            print_table(n2, -1);
-            return 0;
-        }
-        if (str_eq(tok(tokbuf, i), "-kill")) {
-            int pid;
-            int r;
-            if (i + 1 >= n_tok) { print("sysmon: -kill needs a PID\n"); return 2; }
-            pid = to_int(tok(tokbuf, i + 1));
-            r = task_kill(pid);
-            if (r == 0) {
-                print("sysmon: killed pid ");
-                printint(pid);
-                print("\n");
-                return 0;
-            }
-            print("sysmon: kill failed for pid ");
-            printint(pid);
-            print("\n");
-            return 1;
-        }
-        if (str_eq(tok(tokbuf, i), "-spawn")) {
-            char* path;
-            char* a;
-            int pid;
-            if (i + 1 >= n_tok) { print("sysmon: -spawn needs a path\n"); return 2; }
-            path = tok(tokbuf, i + 1);
-            a = "";
-            if (i + 3 < n_tok && str_eq(tok(tokbuf, i + 2), "-args")) a = tok(tokbuf, i + 3);
-            pid = task_spawn_args(path, 0, a);
-            if (pid > 0) {
-                print("sysmon: spawned pid ");
-                printint(pid);
-                print("\n");
-                return 0;
-            }
-            print("sysmon: spawn failed\n");
-            return 1;
-        }
-        print("sysmon: unknown option '"); print(tok(tokbuf, i)); print("' (try -h)\n");
-        return 2;
-    }
-
-    /* ---- TUI mode ---- */
     paused = 0;
     sel = 0;
     tick_prev = gettick();
-
-    ant("2J");            /* full clear once, then re-home each frame */
+    first_frame = 1;
 
     while (1) {
         ant("H");         /* home cursor (no scroll) */
@@ -342,7 +338,7 @@ int main() {
             ant("2J");
             ant("H");
             print("sysmon: bye\n");
-            return 0;
+            return;
         }
         if (k == KEY_UP) {
             if (sel > 0) sel--;
@@ -360,5 +356,56 @@ int main() {
             tick_prev = 0;
         }
         tick_prev = gettick();
+        first_frame = 0;
     }
+}
+
+int main() {
+    char args[160];
+    char tokbuf[512];
+    int n_tok;
+    int i;
+
+    args[0] = 0;
+    i = getargs(args, 160);
+    n_tok = split(args, tokbuf);
+
+    /* Skip leading tokens that do not look like an option.  getargs()
+       may or may not include argv[0]; this handles both cases and also
+       tolerates a leading path such as "/bin/sysmon". */
+    i = 0;
+    while (i < n_tok && tok(tokbuf, i)[0] != '-') i++;
+
+    /* ---- non-TUI modes ---- */
+    if (i < n_tok) {
+        char* opt;
+        opt = tok(tokbuf, i);
+
+        if (str_eq(opt, "-h")) {
+            do_help();
+            return 0;
+        }
+        if (str_eq(opt, "-list-task")) {
+            return do_list_task();
+        }
+        if (str_eq(opt, "-kill")) {
+            if (i + 1 >= n_tok) {
+                print("sysmon: -kill needs a PID\n");
+                return 2;
+            }
+            return do_kill(to_int(tok(tokbuf, i + 1)));
+        }
+        if (str_eq(opt, "-spawn")) {
+            return do_spawn(tokbuf, n_tok, i);
+        }
+        print("sysmon: unknown option '");
+        print(opt);
+        print("' (try -h)\n");
+        return 2;
+    }
+
+    /* ---- TUI mode ---- */
+    ant("2J");            /* full clear once, then re-home each frame */
+    tui_loop();
+    return 0;
 }
