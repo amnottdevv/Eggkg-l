@@ -1,0 +1,4 @@
+# build.ruf for "space" (eggkg / Equinox OS)
+echo "eggkg: Build Space"
+src /equinox/.local/space/src
+out /equinox/.local/space

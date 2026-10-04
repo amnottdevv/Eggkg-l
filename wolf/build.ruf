@@ -1,0 +1,4 @@
+# build.ruf for "wolf" (eggkg / Equinox OS)
+echo "eggkg: Build Wolf"
+src /equinox/.local/wolf/src
+out /equinox/.local/wolf

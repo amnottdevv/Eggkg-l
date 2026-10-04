@@ -1,0 +1,4 @@
+# build.ruf for "flappy" (eggkg / Equinox OS)
+echo "eggkg: Build Flappy"
+src /equinox/.local/flappy/src
+out /equinox/.local/flappy

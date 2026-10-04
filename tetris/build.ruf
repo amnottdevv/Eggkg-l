@@ -1,0 +1,4 @@
+# build.ruf for "tetris" (eggkg / Equinox OS)
+echo "eggkg: Build Tetris"
+src /equinox/.local/tetris/src
+out /equinox/.local/tetris
