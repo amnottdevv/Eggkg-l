@@ -49,9 +49,11 @@
 #define MAX_PX     1000000         /* pixel cap once zoomed in      */
 #define ZMAX       3
 #define ZMIN       -2
-#define SAMPLE_MS  15000           /* auto-exit for the sample, in ms
-                                    * (converted to 100 Hz ticks in
-                                    *  wait_keys) — i.e. 15 s          */
+/* sample auto-exit: wait_keys() takes MILLISECONDS, but gettick() ticks
+   at 100 Hz (1 tick = 10 ms), so 15000 ms = 15 s. Keep this #define
+   comment on ONE line: mtcc's preprocessor is line-oriented and does
+   not strip a block comment that runs past the end of the directive. */
+#define SAMPLE_MS  15000
 
 /* ---- 5x7 HUD font (bit 0 = top row, one byte per column) ---- */
 char FCHARS[44] = " !-./:?0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
