@@ -1,0 +1,4 @@
+# build.ruf for "ppmview" (eggkg / Equinox OS)
+echo "eggkg: Build Ppmview"
+src /equinox/.local/ppmview/src
+out /equinox/.local/ppmview
