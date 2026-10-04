@@ -667,6 +667,10 @@ int main() {
     if (hp <= 0) {
         draw_text((SW >> 1) - 60, (SH >> 1) - 24, "YOU DIED", 2, COL_OVER);
         print("wolf: you died - score ");
+    } else if (enemies_left() > 0) {
+        /* keluar sendiri sebelum level beres — bukan kemenangan */
+        draw_text((SW >> 1) - 23, (SH >> 1) - 24, "QUIT", 2, COL_TEXT);
+        print("wolf: quit - score ");
     } else {
         draw_text((SW >> 1) - 66, (SH >> 1) - 24, "LEVEL CLEAR", 2,
                   COL_WIN);
