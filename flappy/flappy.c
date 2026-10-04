@@ -189,8 +189,13 @@ int text_uint(int x, int y, int v, int scale, int color) {
 
 /* ---- fixed-timestep gate: fires at most every `period` ms ---- */
 int every(int* last, int period) {
+    /* `period` is in MILLISECONDS; gettick() counts ticks at 100 Hz
+       (timer_init(100) => 1 tick = 10 ms), so compare in ticks.
+       Without the /10 a 33 ms frame gate fired every 330 ms = 3 fps. */
     int now = gettick();
-    if (now - *last >= period) {
+    int min_ticks = period / 10;
+    if (min_ticks < 1) min_ticks = 1;
+    if (now - *last >= min_ticks) {
         *last = now;
         return 1;
     }

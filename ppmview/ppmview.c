@@ -49,7 +49,9 @@
 #define MAX_PX     1000000         /* pixel cap once zoomed in      */
 #define ZMAX       3
 #define ZMIN       -2
-#define SAMPLE_MS  15000           /* auto-exit for the sample      */
+#define SAMPLE_MS  15000           /* auto-exit for the sample, in ms
+                                    * (converted to 100 Hz ticks in
+                                    *  wait_keys) — i.e. 15 s          */
 
 /* ---- 5x7 HUD font (bit 0 = top row, one byte per column) ---- */
 char FCHARS[44] = " !-./:?0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -722,7 +724,10 @@ int wait_keys(int timeout) {
                 }
             }
         }
-        if (timeout > 0 && gettick() - t0 > timeout) return 0;
+        /* timeout is in MILLISECONDS, but gettick() counts ticks at
+         * 100 Hz (timer_init(100) => 1 tick = 10 ms), so compare in
+         * ticks: without the /10 a 15000 ms timeout waited 150 s. */
+        if (timeout > 0 && gettick() - t0 > timeout / 10) return 0;
         sleep(20);
     }
 }
