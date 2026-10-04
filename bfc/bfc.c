@@ -13,8 +13,7 @@
  * loops become while-loops on the current cell. Every non-command
  * byte in the source is a comment and is dropped from the output.
  */
-#include <stdio.h>
-#include <fileio.h>
+#include <multitasking.h>
 
 #define MAXPROG  4096    /* BF source cap (mtcc array limit)         */
 #define MAXGEN   4096    /* generated C size cap                    */
@@ -65,18 +64,18 @@ int main() {
     }
 
     if (path[0] == 0) {
-        printf("usage: bfc FILE.bf\n");
+        print("usage: bfc FILE.bf\n");
         return 2;
     }
 
     n = file_size(path);
     if (n <= 0 || n >= MAXPROG) {
-        printf("bfc: cannot read '%s' (or too big)\n", path);
+        print("bfc: cannot read '"); print(path); print("' (or too big)\n");
         return 1;
     }
     n = file_read_all(path, src, MAXPROG - 1);
     if (n <= 0) {
-        printf("bfc: cannot read '%s'\n", path);
+        print("bfc: cannot read '"); print(path); print("'\n");
         return 1;
     }
     nsrc = n;
@@ -116,7 +115,7 @@ int main() {
         else if (c == '[') { puts_gen("    while ((tape[ip] & 255) != 0) {\n"); }
         else if (c == ']') { puts_gen("    }\n"); }
         if (ngen >= MAXGEN - 64) {
-            printf("bfc: program too big for the generator buffer\n");
+            print("bfc: program too big for the generator buffer\n");
             return 1;
         }
     }
@@ -125,15 +124,50 @@ int main() {
     puts_gen("    return 0;\n");
     puts_gen("}\n");
     if (!putc_gen(0)) {
-        printf("bfc: program too big\n");
+        print("bfc: program too big\n");
         return 1;
     }
 
     n = file_write(out, gen, ngen - 1);
     if (n < 0) {
-        printf("bfc: cannot write '%s'\n", out);
+        print("bfc: cannot write '"); print(out); print("'\n");
         return 1;
     }
-    printf("bfc: %s -> %s (%d bytes)\n", path, out, ngen - 1);
+    print("bfc: "); print(path); print(" -> "); print(out); print(" ("); printint(ngen - 1); print(" bytes)\n");
+
+    /* compile the generated C in a child task (same pattern as the
+     * equinoxinstall pool) -> hello.mrp lands next to the .c */
+    {
+        char cmd[80];
+        int pid;
+        int st;
+        int k;
+        cmd[0] = '-'; cmd[1] = 'c'; cmd[2] = ' ';
+        k = 3;
+        i = 0;
+        while (out[i] && k < 78 - 2) { cmd[k] = out[i]; k++; i++; }
+        cmd[k] = 0;
+        pid = task_spawn_args("mtcc.mrp", 8388608, cmd);
+        if (pid <= 0) {
+            print("bfc: cannot spawn mtcc\n");
+            return 1;
+        }
+        st = -1;
+        task_wait(pid, &st);
+        if (st != 0) {
+            print("bfc: mtcc failed\n");
+            return 1;
+        }
+    }
+    /* hello.c -> hello.mrp name for the banner */
+    {
+        char mrp[64];
+        int pn2;
+        pn2 = 0;
+        i = 0;
+        while (out[i] && out[i] != '.' && pn2 < 62) { mrp[pn2] = out[i]; pn2++; i++; }
+        mrp[pn2] = '.'; mrp[pn2+1] = 'm'; mrp[pn2+2] = 'r'; mrp[pn2+3] = 'p'; mrp[pn2+4] = 0;
+        print("bfc: done -> "); print(mrp); print(" (run it: run "); print(mrp); print(")\n");
+    }
     return 0;
 }
