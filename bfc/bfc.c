@@ -49,22 +49,63 @@ int main() {
     int pn;
     char c;
 
-    /* first non-"bfc" argument token = program path */
+    /* args: bfc [-h] [-o OUTBASE] FILE.bf  (first token "bfc" skipped) */
     n = getargs(args, 160);
     path[0] = 0;
+    out[0] = 0;
     i = 0;
     while (i < n) {
+        char tok[64];
+        int want_out;
+        int ti;
+
         while (i < n && args[i] == ' ') i++;
         if (i >= n) break;
-        pn = 0;
-        while (i < n && args[i] != ' ' && pn < 62) { path[pn] = args[i]; pn++; i++; }
-        path[pn] = 0;
-        if (pn == 3 && path[0] == 'b' && path[1] == 'f' && path[2] == 'c') continue;
-        break;
+        ti = 0;
+        while (i < n && args[i] != ' ' && ti < 62) { tok[ti] = args[i]; ti++; i++; }
+        tok[ti] = 0;
+
+        if (ti == 3 && tok[0] == 'b' && tok[1] == 'f' && tok[2] == 'c') continue;
+
+        if (ti == 2 && tok[0] == '-' && tok[1] == 'h') {
+            print("bfc - Brainfuck to C transpiler (Equinox OS)\n");
+            print("usage: bfc [-h] [-o OUTBASE] FILE.bf\n");
+            print("  FILE.bf   Brainfuck source\n");
+            print("  -o NAME   output base name (default: input basename);\n");
+            print("            writes NAME.c, then NAME.mrp via mtcc\n");
+            print("  -h        this help\n");
+            return 0;
+        }
+        if (ti == 2 && tok[0] == '-' && tok[1] == 'o') {
+            /* next token is the output base name */
+            want_out = 1;
+            while (i < n && args[i] == ' ') i++;
+            ti = 0;
+            while (i < n && args[i] != ' ' && ti < 62) { out[ti] = args[i]; ti++; i++; }
+            out[ti] = 0;
+            if (ti == 0) {
+                print("bfc: -o needs a name\n");
+                return 2;
+            }
+            continue;
+        }
+        if (ti > 0 && tok[0] == '-') {
+            print("bfc: unknown option '"); print(tok); print("' (try -h)\n");
+            return 2;
+        }
+        if (path[0] == 0) {
+            pn = 0;
+            i = 0;
+            while (tok[i] && pn < 62) { path[pn] = tok[i]; pn++; i++; }
+            path[pn] = 0;
+        } else {
+            print("bfc: too many arguments (try -h)\n");
+            return 2;
+        }
     }
 
     if (path[0] == 0) {
-        print("usage: bfc FILE.bf\n");
+        print("usage: bfc [-h] [-o OUTBASE] FILE.bf\n");
         return 2;
     }
 
@@ -80,15 +121,64 @@ int main() {
     }
     nsrc = n;
 
-    /* output path: strip ".bf" (or last '.'), append ".c" */
-    pn = 0;
-    i = 0;
-    while (path[i] && pn < 62) { out[pn] = path[i]; pn++; i++; }
-    /* walk back to the last dot, if any */
-    i = pn - 1;
-    while (i >= 0 && out[i] != '.') i--;
-    if (i > 0) pn = i;
-    out[pn] = '.'; out[pn+1] = 'c'; out[pn+2] = 0;
+    /* ---- syntax check: balanced [ ], at least one command ---- */
+    {
+        int depth;
+        int first_open;   /* position of the oldest unclosed '[' */
+        int cmds;
+        depth = 0;
+        first_open = -1;
+        cmds = 0;
+        i = 0;
+        while (i < nsrc) {
+            c = src[i];
+            i++;
+            if (c == '>' || c == '<' || c == '+' || c == '-' ||
+                c == '.' || c == ',') cmds++;
+            else if (c == '[') {
+                if (depth == 0) first_open = i - 1;
+                depth++;
+            } else if (c == ']') {
+                depth--;
+                if (depth < 0) {
+                    print("bfc: syntax error: ']' at byte ");
+                    printint(i - 1);
+                    print(" has no matching '['\n");
+                    return 1;
+                }
+                if (depth == 0) first_open = -1;
+            }
+        }
+        if (depth > 0) {
+            print("bfc: syntax error: unclosed '[' at byte ");
+            printint(first_open);
+            print(" (missing ']')\n");
+            return 1;
+        }
+        if (cmds == 0) {
+            print("bfc: syntax error: no Brainfuck commands found\n");
+            return 1;
+        }
+    }
+
+    /* output path: -o OUTBASE if given, else input basename */
+    if (out[0]) {
+        pn = 0;
+        while (out[pn] && pn < 60) pn++;
+        /* append ".c" unless already there */
+        if (!(pn >= 2 && out[pn-2] == '.' && out[pn-1] == 'c')) {
+            out[pn] = '.'; out[pn+1] = 'c'; out[pn+2] = 0;
+        }
+    } else {
+        pn = 0;
+        i = 0;
+        while (path[i] && pn < 62) { out[pn] = path[i]; pn++; i++; }
+        /* walk back to the last dot, if any */
+        i = pn - 1;
+        while (i >= 0 && out[i] != '.') i--;
+        if (i > 0) pn = i;
+        out[pn] = '.'; out[pn+1] = 'c'; out[pn+2] = 0;
+    }
 
     /* ---- generated C prologue ---- */
     ngen = 0;
