@@ -1,6 +1,6 @@
 # Eggkg-l
 
-Package repository for [Equinox OS](https://github.com/amnottdevv) —
+Package repository for [Equinox OS](https://github.com/amnottdevv/equinox-os) —
 consumed by the in-OS `eggkg` command through
 `package.list` (format v0, blob URLs converted to raw automatically).
 
