@@ -1,0 +1,12 @@
+# build.ruf — package "sysmon" (eggkg / Equinox OS) — .ruf format v3
+#
+# v3 (v0.9.3): Makefile-style variables — `name := "value"` plus
+# `$name` expansion (case-insensitive). A variable name must DIFFER
+# from a directive name (echo/src/exclude/out/lib/copy/move).
+
+pkg    := "sysmon"
+source := "/equinox/.local/$pkg/src"
+Target := "/equinox/.local/$pkg"
+echo   "eggkg: Build $pkg (interactive system monitor TUI)"
+src    $source
+out    $Target

@@ -18,8 +18,9 @@ consumed by the in-OS `eggkg` command through
 | `ppmview` | PPM (P6/P3) viewer (+ `demo.ppm`) | 1 `.c` + 1 data |
 | `bfi` | Brainfuck interpreter (+ `hello.bf`) | 1 `.c` + 1 data + build.ruf |
 | `bfc` | Brainfuck → C transpiler (mtcc -c → .mrp) | 1 `.c` + build.ruf |
+| `sysmon` | interactive system-monitor TUI (ANSI) | 1 `.c` + build.ruf |
 
-Index: 10 packages / 40 URLs / 2347 bytes.
+Index: 11 packages / 42 URLs / 2347 bytes.
 
 ## Requirement: Equinox v0.9.3 or newer
 

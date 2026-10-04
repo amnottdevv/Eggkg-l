@@ -8,3 +8,4 @@ flappy = ["https://github.com/amnottdevv/Eggkg-l/blob/main/flappy/build.ruf", "h
 ppmview = ["https://github.com/amnottdevv/Eggkg-l/blob/main/ppmview/build.ruf", "https://github.com/amnottdevv/Eggkg-l/blob/main/ppmview/ppmview.c", "https://github.com/amnottdevv/Eggkg-l/blob/main/ppmview/demo.ppm"]
 bfi = ["https://github.com/amnottdevv/Eggkg-l/blob/main/bfi/build.ruf", "https://github.com/amnottdevv/Eggkg-l/blob/main/bfi/bfi.c", "https://github.com/amnottdevv/Eggkg-l/blob/main/bfi/hello.bf"]
 bfc = ["https://github.com/amnottdevv/Eggkg-l/blob/main/bfc/build.ruf", "https://github.com/amnottdevv/Eggkg-l/blob/main/bfc/bfc.c"]
+sysmon = ["https://github.com/amnottdevv/Eggkg-l/blob/main/sysmon/build.ruf", "https://github.com/amnottdevv/Eggkg-l/blob/main/sysmon/sysmon.c"]
