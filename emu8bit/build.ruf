@@ -1,0 +1,23 @@
+# build.ruf — package "emu8bit" (eggkg / Equinox OS) — .ruf format v3
+#
+# emu8bit: 8-bit machine emulator — CHIP-8 / SUPER-CHIP + Intel 8080
+# (Space Invaders machine), ROM menu loader and a built-in self-test.
+# Successor of emu-ch8, same build shape:
+#   - the .c file is downloaded into $source, eggkg runs
+#     `mtcc -make /equinox/.local/emu8bit/build.ruf`, then moves the
+#     .mrp from $Target into /bin (no `copy` directive needed).
+#   - bounce.c8 (CHIP-8 ROM data) is downloaded into $source as well but
+#     skipped by the -make walker (exact .c extension match). The
+#     emulator's ROM menu scans /equinox/.local/emu8bit/src, so the
+#     built-in demo is reachable right after install.
+#   - no libc entry needed: #include <fileio.h> splices the fileio
+#     prelude automatically (menu directory listing).
+# Requires Equinox 0.4 Beta (v0.9.3): ring-3 syscalls 30-46, key_event,
+# and the 8 MB MRP arena.
+
+pkg    := "emu8bit"
+source := "/equinox/.local/$pkg/src"
+Target := "/equinox/.local/$pkg"
+echo   "eggkg: Build $pkg (CHIP-8/SCHIP + 8080 emulator)"
+src    $source
+out    $Target
